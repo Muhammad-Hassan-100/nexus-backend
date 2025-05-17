@@ -3,7 +3,7 @@ from flask_cors import CORS
 from chatllm import chat_response
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
 @app.route('/chat', methods=['POST'])
 def chat():
