@@ -1,11 +1,30 @@
-# University Information - FUUAST
+University Information – Dawood University of Engineering & Technology (DUET)
 
-The Federal Urdu University of Arts, Science and Technology (FUUAST) is a prominent public research university in Pakistan, renowned for being the first in the country to use Urdu as the primary medium of instruction. Established on November 13, 2002, through a presidential ordinance, the university was formed by merging two institutions: the Federal Urdu Arts College and the Federal Urdu Science College. These colleges were originally founded in 1949 by Maulvi Abdul Haq, affectionately known as Baba-e-Urdu, in recognition of his dedication to promoting the Urdu language in higher education.
+Overview and History
+Dawood University of Engineering & Technology (DUET) is a renowned public engineering institution located in Karachi, Pakistan. It was originally established in 1962 as Dawood College of Engineering and Technology (DCET), through a generous contribution from the Dawood Foundation. The foundation stone was laid by then-President of Pakistan, Field Marshal Muhammad Ayub Khan. In 2013, it was granted university status by the Government of Sindh and renamed as DUET. The university honors its founding patron, Seth Ahmed Dawood, and has since developed into a hub of technical education and engineering research in Pakistan.
 
-FUUAST operates from three campuses: the Islamabad campus, which serves as the main seat of the university and is located in Kuri Model Village; the Gulshan campus in Karachi, formerly known as the Federal Urdu Science College; and the Abdul Haq campus in Karachi, formerly the Federal Urdu Arts College. The President of Pakistan acts as the university's Chancellor, while the current Vice Chancellor is Dr. Zabta Khan Shinwari.
+Campuses and Infrastructure
+DUET operates from two main campuses in Karachi. The **Main Campus**, also known as the Jinnah Campus, is situated near the iconic Mazar-e-Quaid on New M.A. Jinnah Road. The **Iqbal Campus**, located in Gulshan-e-Iqbal, primarily hosts the Department of Architecture and Planning. Both campuses are equipped with modern facilities such as well-established laboratories, lecture halls, libraries, seminar rooms, and computer labs, all designed to support academic excellence and practical learning.
 
-The university offers a wide range of academic programs across several faculties, including 39 undergraduate programs, 31 master's programs, and multiple M.Phil and Ph.D. degrees. Its most recognized departments include Computer Science, Business Administration, Economics, Islamic Studies, and Urdu. FUUAST emphasizes both academic learning and research, having published over 3,000 scientific papers, especially in disciplines like Environmental Science, Biology, Engineering, and Physics (EduRank).
+Undergraduate Programs
+DUET offers a diverse range of **Bachelor of Engineering (BE)** degrees in disciplines such as Chemical Engineering, Computer Systems Engineering, Electronic Engineering, Telecommunication Engineering, Petroleum and Gas Engineering, Energy and Environment Engineering, Industrial Engineering and Management, and Metallurgy and Materials Engineering. In addition, the university offers a **Bachelor of Architecture (B.Arch)** through its Department of Architecture and Planning. It has also introduced **Bachelor of Science (BS)** programs in Computer Science, Mathematics, Chemistry, Environmental Science, Business and Information Systems, Artificial Intelligence, and Cyber Security.
 
-With an enrollment of approximately 13,500 students and a faculty of over 450 members, the university plays a key role in expanding higher education in Pakistan. Tuition fees are relatively affordable, with undergraduate programs averaging around PKR 480,000 for four years and master's programs costing about PKR 240,000 for two years. These amounts are approximate and subject to revision, so it is advisable to consult the official university resources for the most accurate figures.
+Postgraduate Programs
 
-For more detailed and updated information, including admissions, academic calendars, and departmental inquiries, students and researchers are encouraged to visit the official university websites at www.fuuast.edu.pk and www.fuuastisb.edu.pk.
+DUET also provides **MS and PhD programs** in selected engineering fields. These include Chemical Engineering, Electronic Engineering, Industrial Engineering and Management, Telecommunication Engineering, and Metallurgy and Materials Engineering. These programs are designed to promote advanced research, innovation, and industry-specific problem-solving. Admission to these programs is based on academic merit, previous qualifications, and departmental test/interview performance.
+
+Admission Criteria
+
+For undergraduate admissions, applicants must have a **minimum of 60% marks in HSC (Pre-Engineering or equivalent)** and pass the **DUET Entry Test**. The merit formula is calculated using SSC (10%), HSC (40%), and DUET Entry Test marks (50%). For MS and PhD programs, candidates must hold relevant **16-year or 18-year degrees** with minimum CGPA requirements and must pass the departmental entry test and interview as part of the selection process.
+
+Accreditation and Recognition
+
+DUET is officially recognized by the **Higher Education Commission (HEC)** of Pakistan and its engineering programs are accredited by the **Pakistan Engineering Council (PEC)**. The Bachelor of Architecture program is approved by the **Pakistan Council of Architects and Town Planners (PCATP)**. This ensures that DUET graduates are eligible for professional licensure and recognized employment opportunities both locally and internationally.
+
+Campus Facilities and Student Life
+
+DUET offers a well-rounded campus life. Students have access to well-equipped libraries, transportation facilities, common rooms, computer centers, student societies, and seminar halls. The university also hosts various technical and co-curricular activities throughout the academic year, promoting both academic and personal development.
+
+Official Resources and Contact
+
+For detailed and up-to-date information about programs, fee structures, academic calendars, and application procedures, students are encouraged to visit the university’s official website: [www.duet.edu.pk](https://www.duet.edu.pk). Admissions-related details are available at: [admissions.duet.edu.pk](https://admissions.duet.edu.pk).
