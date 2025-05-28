@@ -3,6 +3,7 @@ from langchain_openai import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from database import get_supabase_client
 
 API_KEY = "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"
 
@@ -14,14 +15,30 @@ def read_instruction_file(file_path):
         print(f"Error reading instruction file {file_path}: {str(e)}")
         return ""
 
+def get_university_info_from_database():
+    """Fetch university information from database"""
+    try:
+        supabase = get_supabase_client()
+        result = supabase.table("university_info").select("category, info").order("category").execute()
+        
+        if result.data:
+            university_info = ""
+            for item in result.data:
+                university_info += f"\n{item['category'].upper().replace('_', ' ')}:\n{item['info']}\n"
+            return university_info
+        else:
+            return "No university information available in database."
+    except Exception as e:
+        print(f"Error fetching university info from database: {str(e)}")
+        return "Error loading university information from database."
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 do_instructions_path = os.path.join(current_dir, "do_instructions.txt")
 dont_instructions_path = os.path.join(current_dir, "dont_instructions.txt")
-university_info_path = os.path.join(current_dir, "university_info.txt")
 
 do_instructions = read_instruction_file(do_instructions_path)
 dont_instructions = read_instruction_file(dont_instructions_path)
-university_info = read_instruction_file(university_info_path)
+university_info = get_university_info_from_database()
 
 llm = ChatOpenAI(
     model="meta-llama/llama-3-8b-instruct", 
@@ -30,7 +47,7 @@ llm = ChatOpenAI(
 )
 
 system_message = f"""
-You are a helpful assistant for the Federal Urdu University of Arts, Science and Technology (FUUAST). Answer questions about the university and other academic topics.
+You are a helpful assistant for Dawood University of Engineering & Technology (DUET). Answer questions about the university and other academic topics.
 
 UNIVERSITY INFORMATION:
 {university_info}
@@ -69,7 +86,37 @@ def chat_response(user_input):
         return "Please provide a valid question."
         
     try:
-        response = chain.invoke({"input": user_input})
+        # Get fresh university info from database for each chat
+        fresh_university_info = get_university_info_from_database()
+        
+        # Update system message with fresh data
+        fresh_system_message = f"""
+You are a helpful assistant for Dawood University of Engineering & Technology (DUET). Answer questions about the university and other academic topics.
+
+UNIVERSITY INFORMATION:
+{fresh_university_info}
+
+BEHAVIOR INSTRUCTIONS:
+{do_instructions}
+
+RESTRICTIONS:
+{dont_instructions}
+"""
+        
+        # Update the conversation prompt with fresh data
+        fresh_conversation_prompt = PromptTemplate.from_template(
+            fresh_system_message + "\n\n{chat_history}\nHuman: {input}\nAI:"
+        )
+        
+        # Create a new chain with fresh data
+        fresh_chain = ConversationChain(
+            llm=llm,
+            prompt=fresh_conversation_prompt,
+            memory=memory,
+            verbose=True
+        )
+        
+        response = fresh_chain.invoke({"input": user_input})
         
         if isinstance(response, dict) and "response" in response:
             return response["response"]

@@ -1,0 +1,8 @@
+flask==3.0.3
+flask-cors==5.0.0
+supabase==2.15.2
+python-dotenv==1.0.0
+requests==2.32.3
+langchain-openai==0.2.9
+langchain==0.3.7
+langchain-core==0.3.15
