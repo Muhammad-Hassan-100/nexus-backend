@@ -112,6 +112,24 @@ def get_credentials():
     except Exception as e:
         return jsonify({"success": False, "message": f"Get credentials error: {str(e)}"}), 500
 
+@app.route('/api/auth/get-all-credentials', methods=['GET'])
+def get_all_credentials():
+    """Get all credentials from database"""
+    try:
+        result = supabase.table('credentials').select('username, password').execute()
+        
+        if result.data and len(result.data) > 0:
+            return jsonify({
+                "success": True, 
+                "message": "Credentials retrieved successfully",
+                "credentials": result.data
+            }), 200
+        else:
+            return jsonify({"success": False, "message": "No credentials found in database"}), 404
+            
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Get all credentials error: {str(e)}"}), 500
+
 @app.route('/chat', methods=['POST'])
 def chat():
     user_input = request.json.get('message')
