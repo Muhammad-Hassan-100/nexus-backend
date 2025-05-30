@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_URL="https://gmibibayevqasoxcqmec.supabase.co"
+SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdtaWJpYmF5ZXZxYXNveGNxbWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MTAyMzksImV4cCI6MjA2Mzk4NjIzOX0.t3OL_4jNXzamqahehaMmS_rj60gvnPqnadXB7qrD45c"
 
 DATABASE_URL = os.getenv("DATABASE_URL") or "postgresql://postgres.gmibibayevqasoxcqmec:DuetUniversity2024@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
 
