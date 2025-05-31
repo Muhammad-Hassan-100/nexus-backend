@@ -443,21 +443,21 @@ def get_active_notifications():
     try:
         current_date = date.today()
         current_time = datetime.now().time()
-        
+
         print(f"DEBUG: Current date: {current_date}, Current time: {current_time}")
 
         cleanup_expired_notifications()
-        
+
         result = supabase.table('notifications').select('*').eq(
             'is_active', True).lte('start_date', current_date.isoformat()).gte(
                 'end_date',
                 current_date.isoformat()).order('created_at',
                                                 desc=True).execute()
-        
+
         print(f"DEBUG: Found {len(result.data)} notifications matching date criteria")
         for notif in result.data:
             print(f"DEBUG: Notification {notif.get('id')}: {notif.get('title')} - start_date: {notif.get('start_date')}, end_date: {notif.get('end_date')}, start_time: {notif.get('start_time')}, end_time: {notif.get('end_time')}")
-        
+
         active_notifications = []
         for notification in result.data:
             if notification.get('start_time') and notification.get('end_time'):

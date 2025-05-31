@@ -5,7 +5,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from database import get_supabase_client
 
-API_KEY = "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"
+API_KEY = "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"
 
 def read_instruction_file(file_path):
     try:
