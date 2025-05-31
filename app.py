@@ -446,12 +446,10 @@ def get_active_notifications():
 
         print(f"DEBUG: Current date: {current_date}, Current time: {current_time}")
 
-        cleanup_expired_notifications()
-
+        cleanup_expired_notifications()        
         result = supabase.table('notifications').select('*').eq(
             'is_active', True).lte('start_date', current_date.isoformat()).gte(
-                'end_date',
-                current_date.isoformat()).order('created_at',
+                'end_date', current_date.isoformat()).order('created_at',
                                                 desc=True).execute()
 
         print(f"DEBUG: Found {len(result.data)} notifications matching date criteria")
