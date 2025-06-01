@@ -56,10 +56,8 @@ def extract_database_info():
     try:
         cursor = connection.cursor()
         
-        # Get current timestamp
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
-        # Create output content
         output = []
         output.append("=" * 80)
         output.append(f"DATABASE EXPORT - PostgreSQL Database: chatbot")
@@ -67,7 +65,6 @@ def extract_database_info():
         output.append("=" * 80)
         output.append("")
         
-        # Get all tables
         tables = get_all_tables(cursor)
         output.append(f"TOTAL TABLES FOUND: {len(tables)}")
         output.append("-" * 50)
@@ -76,7 +73,6 @@ def extract_database_info():
             output.append(f"\nTABLE: {table_name}")
             output.append("=" * (len(table_name) + 7))
             
-            # Get column information
             columns = get_table_columns(cursor, table_name)
             output.append("\nCOLUMN STRUCTURE:")
             output.append("-" * 20)
@@ -86,37 +82,31 @@ def extract_database_info():
                 default = f" DEFAULT: {default_val}" if default_val else ""
                 output.append(f"  {col_name} | {data_type} | {nullable}{default}")
             
-            # Get table data
             output.append(f"\nDATA FROM {table_name}:")
             output.append("-" * (len(table_name) + 11))
             
             data = get_table_data(cursor, table_name)
-            if isinstance(data, str):  # Error message
+            if isinstance(data, str):
                 output.append(f"  {data}")
             elif not data:
                 output.append("  (No data found)")
             else:
-                # Add column headers
                 col_names = [col[0] for col in columns]
                 output.append(f"  {' | '.join(col_names)}")
                 output.append(f"  {'-' * (len(' | '.join(col_names)))}")
                 
-                # Add data rows
                 for row in data:
-                    # Convert None values to 'NULL' and handle special characters
                     formatted_row = []
                     for item in row:
                         if item is None:
                             formatted_row.append('NULL')
                         else:
-                            # Convert to string and handle newlines
                             str_item = str(item).replace('\n', '\\n').replace('\r', '\\r')
                             formatted_row.append(str_item)
                     output.append(f"  {' | '.join(formatted_row)}")
             
             output.append("\n" + "=" * 80)
         
-        # Write to file
         output_file = "database_export.txt"
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write('\n'.join(output))

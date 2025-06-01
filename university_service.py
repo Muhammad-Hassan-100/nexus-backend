@@ -114,7 +114,6 @@ class UniversityInfoService:
         Update university information
         """
         try:
-            # Check if record exists
             existing = self.supabase.table(self.table_name).select("*").eq("id", info_id).execute()
             
             if not existing.data:
@@ -124,7 +123,6 @@ class UniversityInfoService:
                     "data": None
                 }
 
-            # Prepare update data
             update_data = {}
             if category is not None:
                 update_data["category"] = category.strip().lower()
@@ -165,7 +163,6 @@ class UniversityInfoService:
         Delete university information by ID
         """
         try:
-            # Check if record exists
             existing = self.supabase.table(self.table_name).select("*").eq("id", info_id).execute()
             
             if not existing.data:
@@ -195,7 +192,6 @@ class UniversityInfoService:
         Search university information by keyword in category or info content
         """
         try:
-            # Search in both category and info fields
             result = self.supabase.table(self.table_name).select("*").or_(
                 f"category.ilike.%{query.strip()}%,info.ilike.%{query.strip()}%"
             ).execute()

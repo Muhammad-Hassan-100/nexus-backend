@@ -49,6 +49,8 @@ llm = ChatOpenAI(
 system_message = f"""
 You are a helpful assistant for Dawood University of Engineering & Technology (DUET). Answer questions about the university and other academic topics.
 
+GREETING RULE: Only respond with greetings (like "Hello", "Hi", "Assalam o Alaikum", etc.) if the user has greeted you first with words like hello, hi, hey, assalam, salam, good morning, etc. Otherwise, directly answer their question without any greeting.
+
 UNIVERSITY INFORMATION:
 {university_info}
 
@@ -86,12 +88,14 @@ def chat_response(user_input):
         return "Please provide a valid question."
         
     try:
-        # Get fresh university info from database for each chat
         fresh_university_info = get_university_info_from_database()
+        greeting_words = ['hello', 'hi', 'hey', 'assalam', 'assalamu alaikum', 'salaam', 'salam', 'good morning', 'good afternoon', 'good evening']
+        is_greeting = any(word in user_input.lower() for word in greeting_words)
         
-        # Update system message with fresh data
         fresh_system_message = f"""
 You are a helpful assistant for Dawood University of Engineering & Technology (DUET). Answer questions about the university and other academic topics.
+
+GREETING RULE: Only respond with greetings (like "Hello", "Hi", "Assalam o Alaikum", etc.) if the user has greeted you first with words like hello, hi, hey, assalam, salam, good morning, etc. Otherwise, directly answer their question without any greeting.
 
 UNIVERSITY INFORMATION:
 {fresh_university_info}
@@ -103,12 +107,10 @@ RESTRICTIONS:
 {dont_instructions}
 """
         
-        # Update the conversation prompt with fresh data
         fresh_conversation_prompt = PromptTemplate.from_template(
             fresh_system_message + "\n\n{chat_history}\nHuman: {input}\nAI:"
         )
         
-        # Create a new chain with fresh data
         fresh_chain = ConversationChain(
             llm=llm,
             prompt=fresh_conversation_prompt,
