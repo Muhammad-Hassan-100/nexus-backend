@@ -8,6 +8,7 @@ from datetime import datetime, date, time
 import uuid
 import threading
 import time as time_module
+from keep_alive import keep_alive
 
 app = Flask(__name__)
 CORS(app)
@@ -718,4 +719,8 @@ if __name__ == '__main__':
     def home():
         return "I'm alive!"
 
+    # Start keep-alive service
+    keep_alive()
+    print("✅ Keep-alive service started on port 8080")
+    
     app.run(host='0.0.0.0', port=5000, debug=True)
