@@ -2,7 +2,7 @@
 University Info Service
 Handles all CRUD operations for university information
 """
-from database import get_supabase_client
+from .database import get_supabase_client
 from typing import List, Dict, Optional
 
 class UniversityInfoService:

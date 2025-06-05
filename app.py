@@ -1,14 +1,13 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from chatllm import chat_response
-from university_service import UniversityInfoService
+from src.chatllm import chat_response
+from src.university_service import UniversityInfoService
 import os
-from database import get_supabase_client
+from src.database import get_supabase_client
 from datetime import datetime, date, time
 import uuid
 import threading
 import time as time_module
-from keep_alive import keep_alive
 
 
 app = Flask(__name__)
@@ -448,7 +447,7 @@ def get_active_notifications():
 
         print(f"DEBUG: Current date: {current_date}, Current time: {current_time}")
 
-        cleanup_expired_notifications()        
+        cleanup_expired_notifications()
         result = supabase.table('notifications').select('*').eq(
             'is_active', True).lte('start_date', current_date.isoformat()).gte(
                 'end_date', current_date.isoformat()).order('created_at',
@@ -714,14 +713,9 @@ def health_check():
     }), 200
 
 
+@app.route('/')
+def home():
+    return "I'm alive!"
+
 if __name__ == '__main__':
-
-    @app.route('/')
-    def home():
-        return "I'm alive!"
-
-    # Start keep-alive service
-    keep_alive()
-    print("✅ Keep-alive service started on port 8080")
-    
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run()

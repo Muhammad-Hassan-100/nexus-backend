@@ -3,7 +3,7 @@ from langchain_openai import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from database import get_supabase_client
+from .database import get_supabase_client
 
 API_KEY = "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"
 
