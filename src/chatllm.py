@@ -1,8 +1,9 @@
 import os
 from langchain_openai import ChatOpenAI
-from langchain.memory import ConversationBufferMemory
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMessageHistory
 from .database import get_supabase_client
 
 API_KEY = "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"
@@ -46,8 +47,15 @@ llm = ChatOpenAI(
     openai_api_base="https://openrouter.ai/api/v1"
 )
 
-system_message = f"""
-You are a helpful assistant for Dawood University of Engineering & Technology (DUET). Answer questions about the university and other academic topics.
+store = {}
+
+def get_session_history(session_id: str) -> BaseChatMessageHistory:
+    if session_id not in store:
+        store[session_id] = InMemoryChatMessageHistory()
+    return store[session_id]
+
+chat_prompt = ChatPromptTemplate.from_messages([
+    ("system", """You are a helpful assistant for Dawood University of Engineering & Technology (DUET). Answer questions about the university and other academic topics.
 
 GREETING RULE: Only respond with greetings (like "Hello", "Hi", "Assalam o Alaikum", etc.) if the user has greeted you first with words like hello, hi, hey, assalam, salam, good morning, etc. Otherwise, directly answer their question without any greeting.
 
@@ -58,72 +66,38 @@ BEHAVIOR INSTRUCTIONS:
 {do_instructions}
 
 RESTRICTIONS:
-{dont_instructions}
-"""
+{dont_instructions}"""),
+    MessagesPlaceholder(variable_name="history"),
+    ("human", "{input}")
+])
 
-memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+chain = chat_prompt | llm | StrOutputParser()
 
-messages = [
-    ("system", system_message),
-    ("human", "{question}")
-]
-prompt_template = ChatPromptTemplate.from_messages(messages)
-
-from langchain.chains import ConversationChain
-from langchain_core.prompts import PromptTemplate
-
-conversation_prompt = PromptTemplate.from_template(
-    system_message + "\n\n{chat_history}\nHuman: {input}\nAI:"
+conversational_chain = RunnableWithMessageHistory(
+    chain,
+    get_session_history,
+    input_messages_key="input",
+    history_messages_key="history",
 )
 
-chain = ConversationChain(
-    llm=llm,
-    prompt=conversation_prompt,
-    memory=memory,
-    verbose=True
-)
-
-def chat_response(user_input):
+def chat_response(user_input, session_id="default"):
     if not user_input or not isinstance(user_input, str):
         return "Please provide a valid question."
         
     try:
         fresh_university_info = get_university_info_from_database()
-        greeting_words = ['hello', 'hi', 'hey', 'assalam', 'assalamu alaikum', 'salaam', 'salam', 'good morning', 'good afternoon', 'good evening']
-        is_greeting = any(word in user_input.lower() for word in greeting_words)
         
-        fresh_system_message = f"""
-You are a helpful assistant for Dawood University of Engineering & Technology (DUET). Answer questions about the university and other academic topics.
-
-GREETING RULE: Only respond with greetings (like "Hello", "Hi", "Assalam o Alaikum", etc.) if the user has greeted you first with words like hello, hi, hey, assalam, salam, good morning, etc. Otherwise, directly answer their question without any greeting.
-
-UNIVERSITY INFORMATION:
-{fresh_university_info}
-
-BEHAVIOR INSTRUCTIONS:
-{do_instructions}
-
-RESTRICTIONS:
-{dont_instructions}
-"""
-        
-        fresh_conversation_prompt = PromptTemplate.from_template(
-            fresh_system_message + "\n\n{chat_history}\nHuman: {input}\nAI:"
+        response = conversational_chain.invoke(
+            {
+                "input": user_input,
+                "university_info": fresh_university_info,
+                "do_instructions": do_instructions,
+                "dont_instructions": dont_instructions
+            },
+            config={"configurable": {"session_id": session_id}}
         )
         
-        fresh_chain = ConversationChain(
-            llm=llm,
-            prompt=fresh_conversation_prompt,
-            memory=memory,
-            verbose=True
-        )
-        
-        response = fresh_chain.invoke({"input": user_input})
-        
-        if isinstance(response, dict) and "response" in response:
-            return response["response"]
-        else:
-            return response
+        return response
     except Exception as e:
         print(f"Error in chat_response: {str(e)}")
         return "Sorry, I encountered an error. Please try again later."

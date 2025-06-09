@@ -263,11 +263,13 @@ def get_all_credentials():
 @app.route('/chat', methods=['POST'])
 def chat():
     user_input = request.json.get('message')
+    session_id = request.json.get('session_id', 'default')
+    
     if not user_input:
         return jsonify({"error": "No message provided"}), 400
 
     try:
-        response = chat_response(user_input)
+        response = chat_response(user_input, session_id)
         return jsonify({"response": response})
     except Exception as e:
         print(f"Error processing request: {str(e)}")
