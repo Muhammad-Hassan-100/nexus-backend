@@ -42,7 +42,7 @@ dont_instructions = read_instruction_file(dont_instructions_path)
 university_info = get_university_info_from_database()
 
 llm = ChatOpenAI(
-    model="meta-llama/llama-3-8b-instruct", 
+    model="google/gemini-2.0-flash-exp:free", 
     api_key=API_KEY,
     openai_api_base="https://openrouter.ai/api/v1"
 )
