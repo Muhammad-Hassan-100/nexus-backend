@@ -6,7 +6,7 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMessageHistory
 from .database import get_supabase_client
 
-API_KEY = "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"
+API_KEY = "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"
 
 def read_instruction_file(file_path):
     try:
@@ -95,7 +95,9 @@ def chat_response(user_input, session_id="default"):
         return "Please provide a valid question."
         
     try:
+        print(f"DEBUG: Processing input: {user_input}")
         fresh_university_info = get_university_info_from_database()
+        print(f"DEBUG: University info fetched successfully")
         
         response = conversational_chain.invoke(
             {
@@ -107,7 +109,18 @@ def chat_response(user_input, session_id="default"):
             config={"configurable": {"session_id": session_id}}
         )
         
+        print(f"DEBUG: Response generated successfully: {response[:100]}...")
         return response
     except Exception as e:
         print(f"Error in chat_response: {str(e)}")
-        return "Sorry, I encountered an error. Please try again later."
+        print(f"Error type: {type(e).__name__}")
+        import traceback
+        print(f"Full traceback: {traceback.format_exc()}")
+        
+        # Check for specific error types and provide more helpful messages
+        if "401" in str(e) or "auth" in str(e).lower():
+            return "The chatbot service is currently unavailable due to authentication issues. Please contact support."
+        elif "quota" in str(e).lower() or "limit" in str(e).lower():
+            return "The chatbot service has reached its usage limit. Please try again later."
+        else:
+            return "Sorry, I encountered an error. Please try again later."
