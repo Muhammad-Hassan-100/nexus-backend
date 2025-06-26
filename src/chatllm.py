@@ -6,7 +6,26 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMessageHistory
 from .database import get_supabase_client
 
-API_KEY = "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"
+# Default API key fallback
+DEFAULT_API_KEY = "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"
+
+def get_api_key_from_database():
+    """Fetch API key from database"""
+    try:
+        supabase = get_supabase_client()
+        result = supabase.table("api_settings").select("api_key").limit(1).execute()
+        
+        if result.data and len(result.data) > 0:
+            return result.data[0]['api_key']
+        else:
+            print("No API key found in database, using default")
+            return DEFAULT_API_KEY
+    except Exception as e:
+        print(f"Error fetching API key from database: {str(e)}")
+        return DEFAULT_API_KEY
+
+# Get API key from database
+API_KEY = get_api_key_from_database()
 
 def read_instruction_file(file_path):
     try:
@@ -96,10 +115,29 @@ def chat_response(user_input, session_id="default"):
         
     try:
         print(f"DEBUG: Processing input: {user_input}")
+        
+        # Get fresh API key and university info for each request
+        fresh_api_key = get_api_key_from_database()
         fresh_university_info = get_university_info_from_database()
         print(f"DEBUG: University info fetched successfully")
         
-        response = conversational_chain.invoke(
+        # Create LLM instance with fresh API key
+        fresh_llm = ChatOpenAI(
+            model="google/gemini-2.0-flash-exp:free", 
+            api_key=fresh_api_key,
+            openai_api_base="https://openrouter.ai/api/v1"
+        )
+        
+        # Create fresh chain with updated LLM
+        fresh_chain = chat_prompt | fresh_llm | StrOutputParser()
+        fresh_conversational_chain = RunnableWithMessageHistory(
+            fresh_chain,
+            get_session_history,
+            input_messages_key="input",
+            history_messages_key="history",
+        )
+        
+        response = fresh_conversational_chain.invoke(
             {
                 "input": user_input,
                 "university_info": fresh_university_info,

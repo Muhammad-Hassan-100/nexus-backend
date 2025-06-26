@@ -733,5 +733,92 @@ def health_check():
 def home():
     return "I'm alive!"
 
+@app.route('/test-api')
+def test_api():
+    return jsonify({"message": "Test API route working", "success": True})
+
+# API Key Management Routes
+@app.route('/api/auth/get-api-key', methods=['GET'])
+def get_api_key_route():
+    """Get current API key from database"""
+    try:
+        result = supabase.table('api_settings').select('api_key').limit(1).execute()
+
+        if result.data and len(result.data) > 0:
+            api_key = result.data[0]['api_key']
+            # Return masked API key for security (show only first 8 and last 4 characters)
+            masked_key = api_key[:8] + '*' * (len(api_key) - 12) + api_key[-4:]
+            return jsonify({
+                "success": True,
+                "message": "API key retrieved successfully",
+                "api_key": masked_key,
+                "full_key": api_key
+            }), 200
+        else:
+            return jsonify({
+                "success": False,
+                "message": "No API key found in database"
+            }), 404
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": f"Get API key error: {str(e)}"
+        }), 500
+
+@app.route('/api/auth/update-api-key', methods=['PUT'])
+def update_api_key_route():
+    """Update API key in database"""
+    try:
+        data = request.get_json()
+
+        if not data or 'api_key' not in data:
+            return jsonify({
+                "success": False,
+                "message": "API key is required"
+            }), 400
+
+        api_key = data['api_key'].strip()
+
+        if not api_key:
+            return jsonify({
+                "success": False,
+                "message": "API key cannot be empty"
+            }), 400
+
+        # Check if api_settings table has any records
+        check_result = supabase.table('api_settings').select('id').limit(1).execute()
+
+        if check_result.data and len(check_result.data) > 0:
+            # Update existing record
+            result = supabase.table('api_settings').update({
+                'api_key': api_key,
+                'updated_at': datetime.now().isoformat()
+            }).eq('id', check_result.data[0]['id']).execute()
+        else:
+            # Insert new record
+            result = supabase.table('api_settings').insert({
+                'api_key': api_key,
+                'created_at': datetime.now().isoformat(),
+                'updated_at': datetime.now().isoformat()
+            }).execute()
+
+        if result.data:
+            return jsonify({
+                "success": True,
+                "message": "API key updated successfully"
+            }), 200
+        else:
+            return jsonify({
+                "success": False,
+                "message": "Failed to update API key"
+            }), 500
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": f"Update API key error: {str(e)}"
+        }), 500
+
 if __name__ == '__main__':
     app.run()
