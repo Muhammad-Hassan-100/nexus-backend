@@ -461,6 +461,8 @@ def get_active_notifications():
 
         active_notifications = []
         for notification in result.data:
+            include_notification = True
+            
             if notification.get('start_time') and notification.get('end_time'):
                 try:
                     start_time_str = notification['start_time']
@@ -477,15 +479,27 @@ def get_active_notifications():
                         end_time = datetime.strptime(end_time_str,
                                                      '%H:%M').time()
 
-                    if start_time <= current_time <= end_time:
-                        active_notifications.append(notification)
+                    print(f"DEBUG: Notification {notification.get('id')} - current_time: {current_time}, start_time: {start_time}, end_time: {end_time}")
+                    
+                    if start_time <= end_time:
+                        include_notification = start_time <= current_time <= end_time
+                    else:
+                        include_notification = current_time >= start_time or current_time <= end_time
+                    
+                    print(f"DEBUG: Notification {notification.get('id')} time check result: {include_notification}")
+                        
                 except ValueError as time_error:
                     print(
                         f"Time parsing error for notification {notification.get('id')}: {time_error}"
                     )
-                    active_notifications.append(notification)
+                    include_notification = True
             else:
+                print(f"DEBUG: Notification {notification.get('id')} has no time restrictions")
+                include_notification = True
+                
+            if include_notification:
                 active_notifications.append(notification)
+                print(f"DEBUG: Added notification {notification.get('id')} to active list")
 
         return jsonify({
             "success": True,
