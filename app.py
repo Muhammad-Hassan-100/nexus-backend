@@ -4,10 +4,8 @@ from src.chatllm import chat_response
 from src.university_service import UniversityInfoService
 import os
 from src.database import get_supabase_client
-from datetime import datetime, date, time
+from datetime import datetime
 import uuid
-import threading
-import time as time_module
 
 
 app = Flask(__name__)
@@ -16,76 +14,6 @@ CORS(app)
 university_service = UniversityInfoService()
 
 supabase = get_supabase_client()
-
-
-def cleanup_expired_notifications():
-    """Delete notifications that have expired (past their end date and time)"""
-    try:
-        current_date = date.today()
-        current_time = datetime.now().time()
-
-        result = supabase.table('notifications').select('*').execute()
-
-        expired_notification_ids = []
-
-        for notification in result.data:
-            try:
-                end_date = datetime.strptime(notification['end_date'],
-                                             '%Y-%m-%d').date()
-
-                if end_date < current_date:
-                    expired_notification_ids.append(notification['id'])
-                elif end_date == current_date and notification.get('end_time'):
-                    try:
-                        end_time_str = notification['end_time']
-                        try:
-                            end_time = datetime.strptime(
-                                end_time_str, '%H:%M:%S').time()
-                        except ValueError:
-                            end_time = datetime.strptime(
-                                end_time_str, '%H:%M').time()
-
-                        if current_time > end_time:
-                            expired_notification_ids.append(notification['id'])
-                    except ValueError as time_error:
-                        print(
-                            f"Time parsing error for notification {notification.get('id')}: {time_error}"
-                        )
-
-            except (ValueError, KeyError) as date_error:
-                print(
-                    f"Date parsing error for notification {notification.get('id')}: {date_error}"
-                )
-                continue
-
-        if expired_notification_ids:
-            for notification_id in expired_notification_ids:
-                supabase.table('notifications').delete().eq(
-                    'id', notification_id).execute()
-            print(
-                f"Deleted {len(expired_notification_ids)} expired notifications"
-            )
-
-    except Exception as e:
-        print(f"Error during cleanup of expired notifications: {e}")
-
-
-def periodic_cleanup():
-    """Run cleanup every minute to delete notifications as soon as they expire"""
-    while True:
-        try:
-            time_module.sleep(60)
-            print("Running periodic cleanup of expired notifications...")
-            cleanup_expired_notifications()
-        except Exception as e:
-            print(f"Error in periodic cleanup: {e}")
-
-
-cleanup_thread = threading.Thread(target=periodic_cleanup, daemon=True)
-cleanup_thread.start()
-
-print("Running initial cleanup of expired notifications...")
-cleanup_expired_notifications()
 
 
 @app.route('/api/auth/login', methods=['POST'])
@@ -414,8 +342,6 @@ def get_university_categories():
 def get_notifications():
     """Get all notifications"""
     try:
-        cleanup_expired_notifications()
-
         is_active = request.args.get('active')
         notification_type = request.args.get('type')
 
@@ -442,68 +368,14 @@ def get_notifications():
 
 @app.route('/api/notifications/active', methods=['GET'])
 def get_active_notifications():
-    """Get only active notifications within current date/time range"""
+    """Get only active notifications"""
     try:
-        current_date = date.today()
-        current_time = datetime.now().time()
-
-        print(f"DEBUG: Current date: {current_date}, Current time: {current_time}")
-
-        cleanup_expired_notifications()
         result = supabase.table('notifications').select('*').eq(
-            'is_active', True).lte('start_date', current_date.isoformat()).gte(
-                'end_date', current_date.isoformat()).order('created_at',
-                                                desc=True).execute()
-
-        print(f"DEBUG: Found {len(result.data)} notifications matching date criteria")
-        for notif in result.data:
-            print(f"DEBUG: Notification {notif.get('id')}: {notif.get('title')} - start_date: {notif.get('start_date')}, end_date: {notif.get('end_date')}, start_time: {notif.get('start_time')}, end_time: {notif.get('end_time')}")
-
-        active_notifications = []
-        for notification in result.data:
-            include_notification = True
-            
-            if notification.get('start_time') and notification.get('end_time'):
-                try:
-                    start_time_str = notification['start_time']
-                    end_time_str = notification['end_time']
-
-                    try:
-                        start_time = datetime.strptime(start_time_str,
-                                                       '%H:%M:%S').time()
-                        end_time = datetime.strptime(end_time_str,
-                                                     '%H:%M:%S').time()
-                    except ValueError:
-                        start_time = datetime.strptime(start_time_str,
-                                                       '%H:%M').time()
-                        end_time = datetime.strptime(end_time_str,
-                                                     '%H:%M').time()
-
-                    print(f"DEBUG: Notification {notification.get('id')} - current_time: {current_time}, start_time: {start_time}, end_time: {end_time}")
-                    
-                    if start_time <= end_time:
-                        include_notification = start_time <= current_time <= end_time
-                    else:
-                        include_notification = current_time >= start_time or current_time <= end_time
-                    
-                    print(f"DEBUG: Notification {notification.get('id')} time check result: {include_notification}")
-                        
-                except ValueError as time_error:
-                    print(
-                        f"Time parsing error for notification {notification.get('id')}: {time_error}"
-                    )
-                    include_notification = True
-            else:
-                print(f"DEBUG: Notification {notification.get('id')} has no time restrictions")
-                include_notification = True
-                
-            if include_notification:
-                active_notifications.append(notification)
-                print(f"DEBUG: Added notification {notification.get('id')} to active list")
+            'is_active', True).order('created_at', desc=True).execute()
 
         return jsonify({
             "success": True,
-            "notifications": active_notifications
+            "notifications": result.data
         }), 200
 
     except Exception as e:
@@ -519,10 +391,12 @@ def create_notification():
     """Create a new notification"""
     try:
         data = request.get_json()
+        print(f"DEBUG: Received notification data: {data}")
 
-        required_fields = ['title', 'message', 'type', 'startDate', 'endDate']
+        required_fields = ['title', 'message', 'type']
         for field in required_fields:
             if field not in data:
+                print(f"DEBUG: Missing required field: {field}")
                 return jsonify({
                     "success": False,
                     "message": f"Missing required field: {field}"
@@ -532,17 +406,21 @@ def create_notification():
             'title': data['title'],
             'message': data['message'],
             'type': data['type'],
-            'start_date': data['startDate'],
-            'end_date': data['endDate'],
-            'start_time': data.get('startTime', '00:00'),
-            'end_time': data.get('endTime', '23:59'),
+            'start_date': '1900-01-01',  # Default old date
+            'end_date': '2099-12-31',    # Default far future date
+            'start_time': '00:00',       # Default start time
+            'end_time': '23:59',         # Default end time
             'is_active': data.get('isActive', True),
             'created_at': datetime.now().isoformat(),
             'updated_at': datetime.now().isoformat()
         }
 
+        print(f"DEBUG: Notification data to insert: {notification_data}")
+
         result = supabase.table('notifications').insert(
             notification_data).execute()
+
+        print(f"DEBUG: Supabase result: {result}")
 
         return jsonify({
             "success": True,
@@ -552,6 +430,8 @@ def create_notification():
 
     except Exception as e:
         print(f"Error creating notification: {e}")
+        print(f"DEBUG: Exception type: {type(e)}")
+        print(f"DEBUG: Exception args: {e.args}")
         return jsonify({
             "success": False,
             "message": "Failed to create notification"
@@ -566,15 +446,8 @@ def update_notification(notification_id):
 
         update_data = {'updated_at': datetime.now().isoformat()}
 
-        allowed_fields = [
-            'title', 'message', 'type', 'startDate', 'endDate', 'startTime',
-            'endTime', 'isActive'
-        ]
+        allowed_fields = ['title', 'message', 'type', 'isActive']
         field_mapping = {
-            'startDate': 'start_date',
-            'endDate': 'end_date',
-            'startTime': 'start_time',
-            'endTime': 'end_time',
             'isActive': 'is_active'
         }
 
@@ -679,39 +552,6 @@ def toggle_notification_status(notification_id):
         }), 500
 
 
-@app.route('/api/notifications/cleanup', methods=['POST'])
-def manual_cleanup_notifications():
-    """Manually trigger cleanup of expired notifications"""
-    try:
-        result_before = supabase.table('notifications').select('id').execute()
-        count_before = len(result_before.data)
-
-        cleanup_expired_notifications()
-
-        result_after = supabase.table('notifications').select('id').execute()
-        count_after = len(result_after.data)
-
-        deleted_count = count_before - count_after
-
-        return jsonify({
-            "success": True,
-            "message":
-            f"Cleanup completed. Deleted {deleted_count} expired notifications.",
-            "details": {
-                "before": count_before,
-                "after": count_after,
-                "deleted": deleted_count
-            }
-        }), 200
-
-    except Exception as e:
-        print(f"Error during manual cleanup: {e}")
-        return jsonify({
-            "success": False,
-            "message": "Failed to cleanup expired notifications"
-        }), 500
-
-
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
@@ -737,7 +577,6 @@ def home():
 def test_api():
     return jsonify({"message": "Test API route working", "success": True})
 
-# API Key Management Routes
 @app.route('/api/auth/get-api-key', methods=['GET'])
 def get_api_key_route():
     """Get current API key from database"""
@@ -746,7 +585,6 @@ def get_api_key_route():
 
         if result.data and len(result.data) > 0:
             api_key = result.data[0]['api_key']
-            # Return masked API key for security (show only first 8 and last 4 characters)
             masked_key = api_key[:8] + '*' * (len(api_key) - 12) + api_key[-4:]
             return jsonify({
                 "success": True,
@@ -786,17 +624,14 @@ def update_api_key_route():
                 "message": "API key cannot be empty"
             }), 400
 
-        # Check if api_settings table has any records
         check_result = supabase.table('api_settings').select('id').limit(1).execute()
 
         if check_result.data and len(check_result.data) > 0:
-            # Update existing record
             result = supabase.table('api_settings').update({
                 'api_key': api_key,
                 'updated_at': datetime.now().isoformat()
             }).eq('id', check_result.data[0]['id']).execute()
         else:
-            # Insert new record
             result = supabase.table('api_settings').insert({
                 'api_key': api_key,
                 'created_at': datetime.now().isoformat(),
