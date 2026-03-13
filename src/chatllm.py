@@ -7,7 +7,7 @@ from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMess
 from .database import get_supabase_client
 
 # Default API key fallback
-DEFAULT_API_KEY = "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"
+DEFAULT_API_KEY = ""
 
 def get_api_key_from_database():
     """Fetch API key from database"""
